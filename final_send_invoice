@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Send Message</title>
+</head>
+<body>
+  <h1>Send Message</h1>
+  <input type="file" id="fileInput" accept="application/pdf">
+  <button onclick="uploadPDF()">Upload PDF</button>
+  <p id="status"></p>
+  <label for="phoneNumber">Phone Number:</label>
+  <input type="text" id="phoneNumber" name="phoneNumber" placeholder="Enter phone number">
+
+  <button id="sendButton">Send</button>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.4.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-storage.js"></script>
+  <script>
+    // ---------------------------file uploading and store it in firebase //using firebase api--------------------------------------------------
+    // Firebase configuration
+    var config = {
+            apiKey: "AIzaSyC4WLcwstOnc2C78UbatKpUsg-FqSOVL2A",
+            authDomain: "eazeebox.firebaseapp.com",
+            databaseURL: "https://eazeebox-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "eazeebox",
+            storageBucket: "eazeebox.appspot.com",
+            messagingSenderId: "730592463609",
+            appId: "1:730592463609:web:3a23e8adbf999d588bb028",
+            measurementId: "G-NGLZ3NHQCR"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(config);
+        var storage = firebase.storage();
+        var pdfLink; // Declare pdfLink variable at the global level
+
+
+        // Function to handle PDF upload
+        function uploadPDF() {
+            console.log("file uploading.....!")
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
+
+
+            if (file && file.type === 'application/pdf') {
+                // Upload PDF file to Firebase Storage
+                var storageRef = storage.ref('pdfs/' + file.name);
+                storageRef.put(file, { contentType: 'application/pdf' })
+                    .then(function(snapshot) {
+                        // Get the download URL of the uploaded file
+                        storageRef.getDownloadURL()
+                            .then(function(url) {
+                                pdfLink = url;
+                                // Open the uploaded PDF file in the current browser window
+                                // window.location.href = url;
+                                console.log("0-displaying from here!");
+
+                                console.log(url);//pdf link
+                                console.log("displaying from here!");
+
+
+                                // Display success message
+                                var statusElement = document.getElementById('status');
+                                statusElement.innerHTML = "PDF uploaded successfully!";
+                            })
+                            .catch(function(error) {
+                                console.error("Error getting download URL:", error);
+                            });
+                    })
+                    .catch(function(error) {
+                        console.error("Error uploading PDF:", error);
+                    });
+            } else {
+                // Display an error message for invalid file type
+                var statusElement = document.getElementById('status');
+                statusElement.innerHTML = "Please select a valid PDF file.";
+            }
+        }
+    
+    
+    // ------------------send message function //using the interact api------------------------
+    function sendMessage(phoneNumber,pdfLink) {
+
+      console.log("send function triggered!...")
+      console.log(pdfLink)
+
+      const url = 'https://api.interakt.ai/v1/public/message/';
+      const apiKey = 'c2dPaHdSR3Z2eHlvRHNoRU5DaWV3WlZOdVA5YWRrb0tFTFJMS0FJQUZWQTo=';
+
+      const headers = {
+        Authorization: 'Basic ' + apiKey,
+        'Content-Type': 'application/json',
+      };
+
+      const payload = {
+        countryCode: '+91',
+        phoneNumber: phoneNumber,
+        type: 'Template',
+        callbackData: 'some_callback_data',
+        template: {
+          name: 'example3',
+          languageCode: 'en',
+          headerValues: [pdfLink],
+            // "https://firebasestorage.googleapis.com/v0/b/eazeebox.appspot.com/o/pdfs%2FPO-Haptik%20(R).pdf?alt=media&token=0ecbc946-caa1-41de-bdad-3f766b45cb40"
+          
+          bodyValues: ['There'],
+          buttonValues: {
+            1: ['12344']
+          }
+        }
+      };
+
+      fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload),
+      })
+      .then(function(response) {
+        console.log(response.status);
+        return response.json();
+      })
+      .then(function(data) {
+        console.log(data);
+      })
+      .catch(function(error) {
+        console.error(error);
+      });
+    }
+
+    document.getElementById('sendButton').addEventListener('click', function() {
+      const phoneNumber = document.getElementById('phoneNumber').value;
+      sendMessage(phoneNumber,pdfLink);
+    });
+  </script>
+</body>
+</html>
