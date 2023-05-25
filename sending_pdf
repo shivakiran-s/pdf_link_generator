@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Send Message</title>
+</head>
+<body>
+  <h1>Send Message</h1>
+  
+  <button id="sendButton">Send</button>
+
+  <script>
+    document.getElementById('sendButton').addEventListener('click', function() {
+      const url = 'https://api.interakt.ai/v1/public/message/';
+      const apiKey = 'c2dPaHdSR3Z2eHlvRHNoRU5DaWV3WlZOdVA5YWRrb0tFTFJMS0FJQUZWQTo=';
+
+      const headers = {
+        Authorization: 'Basic ' + apiKey,
+        'Content-Type': 'application/json',
+      };
+
+      const payload = {
+        countryCode: '+91',
+        phoneNumber: '9449766904',
+        type: 'Template',
+        callbackData: 'some_callback_data',
+        template: {
+          name: 'example3',
+          languageCode: 'en',
+          headerValues: [
+            "https://firebasestorage.googleapis.com/v0/b/eazeebox.appspot.com/o/pdfs%2FPO-Haptik%20(R).pdf?alt=media&token=0ecbc946-caa1-41de-bdad-3f766b45cb40"
+          ],
+          bodyValues: ['There'],
+          buttonValues: {
+            1: ['12344']
+          }
+        }
+      };
+
+      fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload),
+      })
+        .then(function(response) {
+          console.log(response.status);
+          return response.json();
+        })
+        .then(function(data) {
+          console.log(data);
+        })
+        .catch(function(error) {
+          console.error(error);
+        });
+    });
+  </script>
+</body>
+</html>
